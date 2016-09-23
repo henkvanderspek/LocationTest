@@ -14,44 +14,51 @@ class EventCell: UITableViewCell {
 
 class EventsViewController: UIViewController {
     
-    private var sessionEvents = [Relationship]()
-    @IBOutlet weak var tableView: UITableView!
+    let graph = Graph()
     var session: Entity?
+    var actions = [Action]()
     
+    @IBOutlet weak var tableView: UITableView!
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        guard let group = session?.id else { return }
+        logAppEvent("Load events view controller")
         graph.delegate = self
-        graph.watchForRelationship(types: ["SessionEvent"], groups: [group])
+        graph.watchForAction()
         reloadGraph()
     }
     
-    private func reloadGraph() {
-        guard let group = session?.id else { return }
-        sessionEvents = graph.searchForRelationship(types: ["SessionEvent"], groups: [group]).reverse()
-        // For some reason this isn't valid
-        sessionEvents.removeFirst()
+    func reloadGraph() {
+        guard let session = session else { return }
+        actions = session.actions
+        actions.sortInPlace{ $0.createdDate.compare($1.createdDate) == .OrderedDescending }
         tableView.reloadData()
     }
 }
 
 extension EventsViewController: GraphDelegate {
-    func graphDidInsertRelationship(graph: Graph, relationship: Relationship, fromCloud: Bool) {
-        reloadGraph()
+    func graphDidInsertAction(graph: Graph, action: Action, fromCloud: Bool) {
+        if let session = action.subjects.first where session == session {
+            reloadGraph()
+        }
     }
 }
 
 extension EventsViewController: UITableViewDataSource {
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return sessionEvents.count
+        return actions.count
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell")! as UITableViewCell
-        let se = sessionEvents[indexPath.row]
+        let action = actions[indexPath.row]
+        let event = action.objects.first!
         
-        cell.textLabel?.font = UIFont(name: "SourceCodePro-Regular", size: 11)
-        cell.textLabel?.text = se.subject?["description"] as? String ?? nil
+        cell.textLabel?.font = UIFont(name: "SourceCodePro-Regular", size: 13)
+        cell.textLabel?.text = dateFormatter.stringFromDate(event.createdDate)
+        
+        cell.detailTextLabel?.font = UIFont.systemFontOfSize(10)
+        cell.detailTextLabel?.text = event["description"] as? String ?? nil
         
         return cell
     }

@@ -17,6 +17,8 @@
 		B662E6121D93E59E00426953 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B662E6111D93E59E00426953 /* Assets.xcassets */; };
 		B662E6151D93E59E00426953 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B662E6131D93E59E00426953 /* LaunchScreen.storyboard */; };
 		B662E6201D93E59F00426953 /* LocationTestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B662E61F1D93E59F00426953 /* LocationTestTests.swift */; };
+		B68600941D9550AD00CBF64A /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68600931D9550AD00CBF64A /* MainViewController.swift */; };
+		B68600961D956D7100CBF64A /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B68600951D956D7100CBF64A /* MapViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +48,8 @@
 		B662E61B1D93E59F00426953 /* LocationTestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LocationTestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B662E61F1D93E59F00426953 /* LocationTestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationTestTests.swift; sourceTree = "<group>"; };
 		B662E6211D93E59F00426953 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B68600931D9550AD00CBF64A /* MainViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		B68600951D956D7100CBF64A /* MapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		D9217F8DB9A657DCD7526490 /* Pods-LocationTest.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LocationTest.debug.xcconfig"; path = "Pods/Target Support Files/Pods-LocationTest/Pods-LocationTest.debug.xcconfig"; sourceTree = "<group>"; };
 		F7F53DD1A99A08246FE858DE /* Pods-LocationTest.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LocationTest.release.xcconfig"; path = "Pods/Target Support Files/Pods-LocationTest/Pods-LocationTest.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -105,6 +109,8 @@
 			isa = PBXGroup;
 			children = (
 				B662E60A1D93E59E00426953 /* AppDelegate.swift */,
+				B68600931D9550AD00CBF64A /* MainViewController.swift */,
+				B68600951D956D7100CBF64A /* MapViewController.swift */,
 				B662E60C1D93E59E00426953 /* SessionsViewController.swift */,
 				B6458DA71D948E960047B762 /* EventsViewController.swift */,
 				B662E60E1D93E59E00426953 /* Main.storyboard */,
@@ -190,6 +196,11 @@
 				TargetAttributes = {
 					B662E6061D93E59E00426953 = {
 						CreatedOnToolsVersion = 7.3.1;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 					B662E61A1D93E59F00426953 = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -338,6 +349,8 @@
 				B662E60D1D93E59E00426953 /* SessionsViewController.swift in Sources */,
 				B662E60B1D93E59E00426953 /* AppDelegate.swift in Sources */,
 				B6458DA81D948E960047B762 /* EventsViewController.swift in Sources */,
+				B68600961D956D7100CBF64A /* MapViewController.swift in Sources */,
+				B68600941D9550AD00CBF64A /* MainViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -416,7 +429,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -456,7 +469,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

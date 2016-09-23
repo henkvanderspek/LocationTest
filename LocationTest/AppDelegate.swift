@@ -8,6 +8,7 @@
 
 import UIKit
 import Graph
+import CoreLocation
 
 extension UIApplicationState {
     var text: String {
@@ -22,59 +23,147 @@ extension UIApplicationState {
     }
 }
 
-let graph = Graph()
+extension UIBackgroundRefreshStatus {
+    var text: String {
+        switch self {
+        case .Restricted:
+            return "App Background Refresh = Restricted"
+        case .Available:
+            return "App Background Refresh = Available"
+        case .Denied:
+            return "App Background Refresh = Denied"
+        }
+    }
+}
+
+let manager = CLLocationManager()
+private let graph = Graph()
+
+public enum LogLevel {
+    case Fatal
+    case Error
+    case Warn
+    case Info
+    case Debug
+    case Trace
+}
+
+extension LogLevel {
+    var text: String {
+        switch self {
+        case .Fatal:
+            return "Fatal"
+        case .Error:
+            return "Error"
+        case .Warn:
+            return "Warning"
+        case .Info:
+            return "Info"
+        case .Debug:
+            return "Debug"
+        case .Trace:
+            return "Trace"
+        }
+    }
+}
+
+public func logAppEvent(description: String, level: LogLevel = .Debug) {
+    logEvent(description, type: "Application", level: level)
+}
+
+public func logLocationEvent(description: String, level: LogLevel = .Debug) {
+    logEvent(description, type: "Location", level: level)
+}
+
+public func logEvent(description: String, type: String, level: LogLevel = .Debug) {
+    
+    guard let session = session else { return }
+    
+    let event = Entity(type: "Event")
+    event["description"] = description
+    event.addToGroup(type)
+    event.addToGroup(level.text)
+    
+    // TODO: add to app version group
+    
+    let log = Action(type: "Record")
+    log.addSubject(session)
+    log.addObject(event)
+    
+    graph.async { (success: Bool, error: NSError?) in
+        if let e: NSError = error {
+            print(e)
+        }
+    }
+}
+
+var session: Entity? {
+    didSet {
+        isSessionPending = (session != nil)
+    }
+}
+
+var isSessionPending: Bool {
+    get {
+        return NSUserDefaults.standardUserDefaults().boolForKey("SessionPending")
+    }
+    set {
+        NSUserDefaults.standardUserDefaults().setBool(true, forKey: "SessionPending")
+        NSUserDefaults.standardUserDefaults().synchronize()
+    }
+}
+
+public var dateFormatter: NSDateFormatter = {
+    let f = NSDateFormatter()
+    f.dateFormat = "HH:mm:ss.SSS"
+    return f
+}()
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     
     var window: UIWindow?
-    private var session: Entity? {
-        didSet {
-            isSessionPending = (session != nil)
-        }
-    }
     
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+        createSession(withState: "Inactive")
+        logAppEvent("Application did finish launch")
+        manager.delegate = self
+        manager.requestAlwaysAuthorization()
+        manager.pausesLocationUpdatesAutomatically = true
+        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        manager.activityType = .Fitness
+        manager.startUpdatingLocation()
+        logLocationEvent("Location tracking activated")
         return true
     }
     
     func applicationWillEnterForeground(application: UIApplication) {
-        logAppEvent(withDescription: "Application will enter foreground")
+        logAppEvent("Application will enter foreground")
         createSession(withState: "Inactive")
     }
     
     func applicationDidBecomeActive(application: UIApplication) {
         createSession(withState: "Active")
-        logAppEvent(withDescription: "Application did become active")
+        logAppEvent("Application did become active")
     }
 
     func applicationWillResignActive(application: UIApplication) {
-        logAppEvent(withDescription: "Applicaiton will resign active")
+        logAppEvent("Applicaiton will resign active")
         createSession(withState: "Inactive")
     }
     
     func applicationDidEnterBackground(application: UIApplication) {
         createSession(withState: "Background")
-        logAppEvent(withDescription: "Application did enter background")
+        logAppEvent("Application did enter background")
     }
     
     func applicationDidReceiveMemoryWarning(application: UIApplication) {
-        logAppEvent(withDescription: "Application did receive memory warning")
+        logAppEvent("Application did receive memory warning")
     }
     
     func applicationWillTerminate(application: UIApplication) {
-        logAppEvent(withDescription: "Application will terminate")
+        logAppEvent("Application will terminate")
         endSession(withResult: "Terminated")
-    }
-    
-    var isSessionPending: Bool {
-        get {
-            return NSUserDefaults.standardUserDefaults().boolForKey("SessionPending")
-        }
-        set {
-            NSUserDefaults.standardUserDefaults().setBool(true, forKey: "SessionPending")
-            NSUserDefaults.standardUserDefaults().synchronize()
-        }
     }
 }
 
@@ -115,19 +204,33 @@ extension AppDelegate {
             }
         }
     }
+}
 
-    func logAppEvent(withDescription description: String) {
-
-        let event = Entity(type: "Event")
-        event["description"] = description
+extension AppDelegate: CLLocationManagerDelegate {
+    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+        switch status {
+        case .Denied:
+            logLocationEvent("Location tracking denied")
+        case .NotDetermined:
+            logLocationEvent("Location tracking authorization status not determined")
+        case .Restricted:
+            logLocationEvent("Location tracking restricted")
+        case .AuthorizedWhenInUse:
+            logLocationEvent("Location tracking authorized, when in use")
+        case .AuthorizedAlways:
+            logLocationEvent("Location tracking always authorized")
+            if #available(iOS 9, *) {
+                manager.allowsBackgroundLocationUpdates = true
+            }
+        }
+    }
+    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        logLocationEvent("Location manager did update locations")
         
-        let se = Relationship(type: "SessionEvent")
-        se.subject = event
-        se.object = session
-        se.addToGroup("Application")
-        
-        if let id = session?.id {
-            se.addToGroup(id)
+        locations.forEach { (loc) in
+            let location = Entity(type: "Location")
+            location["data"] = loc
+            location.addToGroup(UIApplication.sharedApplication().applicationState.text)
         }
         
         graph.async { (success: Bool, error: NSError?) in
@@ -137,3 +240,4 @@ extension AppDelegate {
         }
     }
 }
+

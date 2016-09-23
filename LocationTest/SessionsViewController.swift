@@ -9,22 +9,19 @@
 import UIKit
 import Graph
 
-var formatter: NSDateFormatter = {
-    let f = NSDateFormatter()
-    f.dateFormat = "HH:mm:ss.SSS"
-    return f
-}()
-
 class SessionCell: UITableViewCell {
 }
 
 class SessionsViewController: UIViewController {
     
-    private var sessions = [Entity]()
+    let graph = Graph()
+    var sessions = [Entity]()
+    
     @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        logAppEvent("Load sessions view controller")
         graph.watchForEntity(types: ["Session"])
         reloadGraph()
     }
@@ -34,8 +31,9 @@ class SessionsViewController: UIViewController {
         graph.delegate = self
     }
     
-    private func reloadGraph() {
-        sessions = graph.searchForEntity(types: ["Session"]).reverse()
+    func reloadGraph() {
+        sessions = graph.searchForEntity(types: ["Session"])
+        sessions.sortInPlace{ $0.createdDate.compare($1.createdDate) == .OrderedDescending }
         tableView.reloadData()
     }
 }
@@ -56,12 +54,12 @@ extension SessionsViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell")! as UITableViewCell
         let session = sessions[indexPath.row]
         
-        var text = formatter.stringFromDate(session.createdDate)
+        var text = dateFormatter.stringFromDate(session.createdDate)
         if let d = session["endedDate"] as? NSDate {
-            text = text + " - " + formatter.stringFromDate(d)
+            text = text + " - " + dateFormatter.stringFromDate(d)
         }
         
-        cell.textLabel?.font = UIFont(name: "SourceCodePro-Regular", size: 14)
+        cell.textLabel?.font = UIFont(name: "SourceCodePro-Regular", size: 12)
         cell.textLabel?.text = text
         
         let state = session["state"] as? String ?? "Unknown"
@@ -70,7 +68,7 @@ extension SessionsViewController: UITableViewDataSource {
         cell.detailTextLabel?.font = UIFont.systemFontOfSize(10)
         cell.detailTextLabel?.text = "\(result) (while app state: \(state))"
         
-        cell.accessoryType = (session.relationships.count == 0 ? .None : .DisclosureIndicator)
+        cell.accessoryType = (session.actions.count == 0 ? .None : .DisclosureIndicator)
         
         return cell
     }
@@ -78,8 +76,12 @@ extension SessionsViewController: UITableViewDataSource {
 
 extension SessionsViewController: UITableViewDelegate {
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let vc = storyboard?.instantiateViewControllerWithIdentifier("Events") as! EventsViewController
-        vc.session = sessions[indexPath.row]
-        navigationController!.pushViewController(vc, animated: true)
+        let session = sessions[indexPath.row]
+        if session.actions.count > 0 {
+            logAppEvent("Push events view controller")
+            let vc = storyboard?.instantiateViewControllerWithIdentifier("Events") as! EventsViewController
+            vc.session = sessions[indexPath.row]
+            navigationController!.pushViewController(vc, animated: true)
+        }
     }
 }
