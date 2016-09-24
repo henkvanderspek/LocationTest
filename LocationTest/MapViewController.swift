@@ -11,13 +11,14 @@ import MapKit
 import Graph
 
 extension Entity {
-    var annotation: PointAnnotation? {
+    func annotation(highlighted highlighted: Bool = true) -> PointAnnotation? {
         guard let location = self["data"] as? CLLocation else { return nil }
-        let point = PointAnnotation()
-        point.coordinate = location.coordinate
-        point.title = "Title"
-        point.subtitle = "Sub title"
-        return point
+        let a = PointAnnotation()
+        a.highlighted = highlighted
+        a.coordinate = location.coordinate
+        a.title = "Title"
+        a.subtitle = "Sub title"
+        return a
     }
 }
 
@@ -26,7 +27,7 @@ class AnnotationView: MKAnnotationView {
 
 class PointAnnotation: MKPointAnnotation {
     var highlighted = true
-    func clone(highlighted: Bool = false) -> PointAnnotation {
+    func cloned(highlighted: Bool = false) -> PointAnnotation {
         let a = PointAnnotation()
         a.highlighted = highlighted
         a.coordinate = coordinate
@@ -40,36 +41,29 @@ class MapViewController: UIViewController {
     
     let graph = Graph()
     var liveUpdates = true
-    var missedItems = 0
+    var queuedAnnotations = [PointAnnotation]()
     var lastAnnotation: PointAnnotation?
     
     @IBOutlet weak var mapView: MKMapView!
+    
+    deinit {
+        print("Deinit map vc")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         logAppEvent("Load map view controller")
         graph.delegate = self
         graph.watchForEntity(types: ["Location"])
-        reloadGraph()
+        loadGraph()
     }
     
-    func reloadGraph() {
-        let locations = graph.searchForEntity(types: ["Location"]).suffix(1 + missedItems)
-        let tmp = locations.map { $0.annotation! } as [PointAnnotation]
-        let annotations = tmp.map { (point) -> PointAnnotation in
-            if point == tmp.last {
-                return point
-            } else {
-                return point.clone()
-            }
-        }
-        mapView.showAnnotations(annotations, animated: true)
-        if let lastAnnotation = lastAnnotation {
-            let a = lastAnnotation.clone()
-            a.highlighted = false
-            mapView.removeAnnotation(lastAnnotation)
-            mapView.addAnnotation(a)
-        }
+    func loadGraph() {
+        let locations = graph.searchForEntity(types: ["Location"]).suffix(50)
+        let annotations = locations.map { $0.annotation(highlighted: $0 == locations.last!)! }
+        print(annotations.count)
+        mapView.showAnnotations(annotations, animated: false)
+        mapView.centerCoordinate = annotations.last!.coordinate
         lastAnnotation = annotations.last
     }
 }
@@ -84,10 +78,15 @@ extension MapViewController {
 extension MapViewController: GraphDelegate {
     func graphDidInsertEntity(graph: Graph, entity: Entity, fromCloud: Bool) {
         if liveUpdates {
-            self.reloadGraph()
-            self.missedItems = 0
+            guard let annotation = entity.annotation() else { return }
+            mapView.addAnnotations(queuedAnnotations)
+            mapView.removeAnnotation(lastAnnotation!)
+            mapView.addAnnotations([lastAnnotation!.cloned()])
+            mapView.showAnnotations([annotation], animated: false)
+            queuedAnnotations.removeAll()
+            lastAnnotation = annotation
         } else {
-            missedItems = missedItems + 1
+            queuedAnnotations.append(entity.annotation(highlighted: false)!)
         }
     }
 }
