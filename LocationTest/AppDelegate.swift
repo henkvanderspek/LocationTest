@@ -131,7 +131,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         manager.requestAlwaysAuthorization()
         manager.pausesLocationUpdatesAutomatically = true
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
-        manager.activityType = .Fitness
+        manager.activityType = .AutomotiveNavigation
         manager.startUpdatingLocation()
         logLocationEvent("Location tracking activated")
         return true

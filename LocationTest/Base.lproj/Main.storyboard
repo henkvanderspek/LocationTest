@@ -104,20 +104,36 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="HUi-Ge-ECX">
-                                <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                                <rect key="frame" x="0.0" y="0.0" width="600" height="556"/>
                                 <connections>
                                     <outlet property="delegate" destination="Dqt-d0-TQV" id="Q2H-kx-1IO"/>
                                 </connections>
                             </mapView>
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="GcQ-V3-aLO">
+                                <rect key="frame" x="0.0" y="556" width="600" height="44"/>
+                                <items>
+                                    <barButtonItem image="show-location" id="Wd7-oa-n5L">
+                                        <connections>
+                                            <action selector="toggleShowLocation:" destination="Dqt-d0-TQV" id="n04-1H-Gys"/>
+                                        </connections>
+                                    </barButtonItem>
+                                    <barButtonItem style="plain" systemItem="flexibleSpace" id="hWs-S8-hSb"/>
+                                </items>
+                            </toolbar>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstAttribute="bottom" secondItem="GcQ-V3-aLO" secondAttribute="bottom" id="CrJ-kk-opc"/>
+                            <constraint firstItem="GcQ-V3-aLO" firstAttribute="leading" secondItem="dQG-xj-aVP" secondAttribute="leading" id="MDb-Ms-geu"/>
                             <constraint firstItem="HUi-Ge-ECX" firstAttribute="top" secondItem="dQG-xj-aVP" secondAttribute="top" id="PUP-tU-2gw"/>
                             <constraint firstAttribute="trailing" secondItem="HUi-Ge-ECX" secondAttribute="trailing" id="ehe-5O-wd2"/>
                             <constraint firstItem="NeQ-wC-EVx" firstAttribute="top" secondItem="HUi-Ge-ECX" secondAttribute="bottom" id="lrG-r0-2Ih"/>
                             <constraint firstItem="HUi-Ge-ECX" firstAttribute="leading" secondItem="dQG-xj-aVP" secondAttribute="leading" id="m8x-6b-II6"/>
+                            <constraint firstAttribute="trailing" secondItem="GcQ-V3-aLO" secondAttribute="trailing" id="rVd-9p-FCX"/>
                         </constraints>
                     </view>
+                    <toolbarItems/>
+                    <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="mapView" destination="HUi-Ge-ECX" id="xkh-63-k0N"/>
                     </connections>
@@ -253,5 +269,25 @@
             </objects>
             <point key="canvasLocation" x="994" y="-423"/>
         </scene>
+        <!--View Controller-->
+        <scene sceneID="Hlw-3i-eyu">
+            <objects>
+                <viewController id="kCz-Qe-Q9X" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="ia0-WH-tnf"/>
+                        <viewControllerLayoutGuide type="bottom" id="8GV-IO-ofg"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="2hq-1A-Lgo">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="D0r-K6-7LF" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+        </scene>
     </scenes>
+    <resources>
+        <image name="show-location" width="24" height="24"/>
+    </resources>
 </document>
